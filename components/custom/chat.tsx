@@ -16,10 +16,10 @@ import { MultimodalInput } from './multimodal-input';
 import { Overview } from './overview';
 
 export function Chat({
-  id,
-  initialMessages,
-  selectedModelId,
-}: {
+                       id,
+                       initialMessages,
+                       selectedModelId,
+                     }: {
   id: string;
   initialMessages: Array<Message>;
   selectedModelId: string;
@@ -45,76 +45,88 @@ export function Chat({
   const [canvas, setCanvas] = useState<UICanvas | null>(null);
 
   const [messagesContainerRef, messagesEndRef] =
-    useScrollToBottom<HTMLDivElement>();
+      useScrollToBottom<HTMLDivElement>();
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
 
+  // Set background based on the selected model
+  const backgroundImage = selectedModelId === 'gpt-4o'
+      ? '/images/laveneno.png'
+      : '/images/scary.jpg';
+
   return (
-    <>
-      <div className="flex flex-col min-w-0 h-dvh bg-background">
-        <ChatHeader selectedModelId={selectedModelId} />
+      <>
         <div
-          ref={messagesContainerRef}
-          className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll"
+            className="flex flex-col min-w-0 h-dvh bg-background"
+            style={{
+              backgroundImage: `url(${backgroundImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
         >
-          {messages.length === 0 && <Overview />}
-
-          {messages.map((message) => (
-            <PreviewMessage
-              key={message.id}
-              role={message.role}
-              content={message.content}
-              attachments={message.experimental_attachments}
-              toolInvocations={message.toolInvocations}
-              canvas={canvas}
-              setCanvas={setCanvas}
-            />
-          ))}
-
+          <ChatHeader selectedModelId={selectedModelId} />
           <div
-            ref={messagesEndRef}
-            className="shrink-0 min-w-[24px] min-h-[24px]"
-          />
+              ref={messagesContainerRef}
+              className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll"
+          >
+            {messages.length === 0 && <Overview />}
+
+            {messages.map((message) => (
+                <PreviewMessage
+                    key={message.id}
+                    role={message.role}
+                    content={message.content}
+                    attachments={message.experimental_attachments}
+                    toolInvocations={message.toolInvocations}
+                    canvas={canvas}
+                    setCanvas={setCanvas}
+                />
+            ))}
+
+            <div
+                ref={messagesEndRef}
+                className="shrink-0 min-w-[24px] min-h-[24px]"
+            />
+          </div>
+          <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
+            <MultimodalInput
+                input={input}
+                setInput={setInput}
+                handleSubmit={handleSubmit}
+                isLoading={isLoading}
+                stop={stop}
+                attachments={attachments}
+                setAttachments={setAttachments}
+                messages={messages}
+                setMessages={setMessages}
+                append={append}
+            />
+          </form>
         </div>
-        <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
-          <MultimodalInput
-            input={input}
-            setInput={setInput}
-            handleSubmit={handleSubmit}
-            isLoading={isLoading}
-            stop={stop}
-            attachments={attachments}
-            setAttachments={setAttachments}
-            messages={messages}
-            setMessages={setMessages}
-            append={append}
-          />
-        </form>
-      </div>
 
-      <AnimatePresence>
-        {canvas && canvas.isVisible && (
-          <Canvas
-            input={input}
-            setInput={setInput}
-            handleSubmit={handleSubmit}
-            isLoading={isLoading}
-            stop={stop}
-            attachments={attachments}
-            setAttachments={setAttachments}
-            append={append}
-            canvas={canvas}
+        <AnimatePresence>
+          {canvas && canvas.isVisible && (
+              <Canvas
+                  input={input}
+                  setInput={setInput}
+                  handleSubmit={handleSubmit}
+                  isLoading={isLoading}
+                  stop={stop}
+                  attachments={attachments}
+                  setAttachments={setAttachments}
+                  append={append}
+                  canvas={canvas}
+                  setCanvas={setCanvas}
+                  messages={messages}
+                  setMessages={setMessages}
+              />
+          )}
+        </AnimatePresence>
+
+        <CanvasStreamHandler
+            streamingData={streamingData}
             setCanvas={setCanvas}
-            messages={messages}
-            setMessages={setMessages}
-          />
-        )}
-      </AnimatePresence>
-
-      <CanvasStreamHandler
-        streamingData={streamingData}
-        setCanvas={setCanvas}
-      />
-    </>
+        />
+      </>
   );
 }
