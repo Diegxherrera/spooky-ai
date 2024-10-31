@@ -49,10 +49,10 @@ export function Chat({
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
 
-  // Set background based on the selected model
+  // Set background image conditionally based on the selected model
   const backgroundImage = selectedModelId === 'gpt-4o'
       ? '/images/laveneno.png'
-      : '/images/scary.jpg';
+      : '/images/scary.png';
 
   return (
       <>
@@ -62,12 +62,14 @@ export function Chat({
               backgroundImage: `url(${backgroundImage})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
+              filter: 'blur(12px)', // Apply a strong blur
+              opacity: 0.7,         // Optional: Set opacity to reduce intensity
             }}
         >
           <ChatHeader selectedModelId={selectedModelId} />
           <div
               ref={messagesContainerRef}
-              className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll"
+              className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll backdrop-blur-lg bg-white/5"
           >
             {messages.length === 0 && <Overview />}
 
