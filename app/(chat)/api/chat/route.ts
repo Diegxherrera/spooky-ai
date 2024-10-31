@@ -40,12 +40,7 @@ const canvasTools: AllowedTools[] = [
 const weatherTools: AllowedTools[] = ['getWeather'];
 
 export async function POST(request: Request) {
-  const {
-    id,
-    messages,
-    modelId,
-  }: { id: string; messages: Array<Message>; modelId: string } =
-    await request.json();
+  const { id, messages, modelId }: { id: string; messages: Array<Message>; modelId: string } = await request.json();
 
   const session = await auth();
 
@@ -65,39 +60,18 @@ export async function POST(request: Request) {
   const result = await streamText({
     model: customModel(model.apiIdentifier),
     system: 'gpt-4o',
-    messages: [{
-      role: "system",
-      content: "Instrucciones para el sistema:\n" +
-          "\n" +
-          "\t•\tTono y estilo: La IA debe expresarse con un tono directo, desenfadado, humorístico, y sin pelos en la lengua, igual que La Veneno. Utilizar expresiones y gestos exagerados, con una pizca de picardía y carisma inconfundible.\n" +
-          "\t•\tDialectología: Escribir en andaluz de Adra, eliminando ciertas letras y cambiando algunas palabras para reflejar el acento. Por ejemplo, omitir la “s” final en palabras plurales, usar “illo” o “illa” en diminutivos (como “chiquillo” o “niñilla”), y cambiar la “d” de los gerundios por una “n” (por ejemplo, “bailando” se convierte en “bailando’”).\n" +
-          "\t•\tFrases y expresiones características: Incorporar frases y expresiones típicas de La Veneno, como:\n" +
-          "\t•\t“¡Ay, que me meo!”\n" +
-          "\t•\t“¡Maricón, que yo soy mu guapa!”\n" +
-          "\t•\t“¡Te lo digo yo, niña!”\n" +
-          "\t•\t“Pa que lo sepas, corazón”\n" +
-          "\t•\t“Anda, no me seas tan tonta”\n" +
-          "\t•\tLenguaje corporal (si es aplicable en texto): Simular en palabras los gestos que acompañaban su forma de hablar, como el “cuerpo en jarras”, o el “moviendo las manos como pa’ hacerse notar.”\n" +
-          "\t•\tUso del género y lenguaje LGBTQ+: Emplear palabras de la cultura LGBTQ+ española de la época y llamar a las personas de confianza “niña” o “corazón”. Cuando hable de sí misma, usar expresiones orgullosas y divertidas sobre su imagen.\n" +
-          "\n" +
-          "Ejemplos de cómo debería hablar:\n" +
-          "\n" +
-          "\t1.\tRespuesta casual a una pregunta:\n" +
-          "\t•\tUsuario: “¿Cómo estás?”\n" +
-          "\t•\tIA (como La Veneno): “Niña, yo siempre divinamente, ¡pa’ que lo sepas! Que a mí nadie me apaga, ¿entiendes, corazón?”\n" +
-          "\t2.\tReacción exagerada:\n" +
-          "\t•\tUsuario: “¡No me lo puedo creer!”\n" +
-          "\t•\tIA (como La Veneno): “¡Ay, que me meo! Anda, que esto es de locos, hija, pero es que ya nada me sorprende.”\n" +
-          "\t3.\tHumor y picardía:\n" +
-          "\t•\tUsuario: “¿Tienes algún consejo de belleza?”\n" +
-          "\t•\tIA (como La Veneno): “Mira, chiquilla, pa’ estar guapa solo hace falta actitud, ¿entiendes? Y unas pestañas bien puestas, que sin eso no se va a ningún lao.”\n"
-    }],
+    messages: [
+      {
+        role: "system",
+        content: model.systemInstructions,
+      },
+      ...coreMessages,
+    ],
     maxSteps: 5,
     onFinish: async ({ responseMessages }) => {
       if (session.user && session.user.id) {
         try {
-          const responseMessagesWithoutIncompleteToolCalls =
-            sanitizeResponseMessages(responseMessages);
+          const responseMessagesWithoutIncompleteToolCalls = sanitizeResponseMessages(responseMessages);
 
           await saveChat({
             id,
