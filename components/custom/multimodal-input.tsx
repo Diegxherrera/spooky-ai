@@ -22,32 +22,19 @@ import useWindowSize from './use-window-size';
 import { Button } from '../ui/button';
 import { Textarea } from '../ui/textarea';
 
-const suggestedActions = [
-  {
-    title: 'What is the weather',
-    label: 'in San Francisco?',
-    action: 'What is the weather in San Francisco?',
-  },
-  {
-    title: 'Help me draft an essay',
-    label: 'about Silicon Valley',
-    action: 'Help me draft an essay about Silicon Valley',
-  },
-];
-
 export function MultimodalInput({
-  input,
-  setInput,
-  isLoading,
-  stop,
-  attachments,
-  setAttachments,
-  messages,
-  setMessages,
-  append,
-  handleSubmit,
-  className,
-}: {
+                                  input,
+                                  setInput,
+                                  isLoading,
+                                  stop,
+                                  attachments,
+                                  setAttachments,
+                                  messages,
+                                  setMessages,
+                                  append,
+                                  handleSubmit,
+                                  className,
+                                }: {
   input: string;
   setInput: (value: string) => void;
   isLoading: boolean;
@@ -57,14 +44,14 @@ export function MultimodalInput({
   messages: Array<Message>;
   setMessages: Dispatch<SetStateAction<Array<Message>>>;
   append: (
-    message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions
+      message: Message | CreateMessage,
+      chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
   handleSubmit: (
-    event?: {
-      preventDefault?: () => void;
-    },
-    chatRequestOptions?: ChatRequestOptions
+      event?: {
+        preventDefault?: () => void;
+      },
+      chatRequestOptions?: ChatRequestOptions
   ) => void;
   className?: string;
 }) {
@@ -133,153 +120,120 @@ export function MultimodalInput({
   };
 
   const handleFileChange = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
-      const files = Array.from(event.target.files || []);
+      async (event: ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(event.target.files || []);
 
-      setUploadQueue(files.map((file) => file.name));
+        setUploadQueue(files.map((file) => file.name));
 
-      try {
-        const uploadPromises = files.map((file) => uploadFile(file));
-        const uploadedAttachments = await Promise.all(uploadPromises);
-        const successfullyUploadedAttachments = uploadedAttachments.filter(
-          (attachment) => attachment !== undefined
-        );
+        try {
+          const uploadPromises = files.map((file) => uploadFile(file));
+          const uploadedAttachments = await Promise.all(uploadPromises);
+          const successfullyUploadedAttachments = uploadedAttachments.filter(
+              (attachment) => attachment !== undefined
+          );
 
-        setAttachments((currentAttachments) => [
-          ...currentAttachments,
-          ...successfullyUploadedAttachments,
-        ]);
-      } catch (error) {
-        console.error('Error uploading files!', error);
-      } finally {
-        setUploadQueue([]);
-      }
-    },
-    [setAttachments]
+          setAttachments((currentAttachments) => [
+            ...currentAttachments,
+            ...successfullyUploadedAttachments,
+          ]);
+        } catch (error) {
+          console.error('Error uploading files!', error);
+        } finally {
+          setUploadQueue([]);
+        }
+      },
+      [setAttachments]
   );
 
   return (
-    <div className="relative w-full flex flex-col gap-4">
-      {messages.length === 0 &&
-        attachments.length === 0 &&
-        uploadQueue.length === 0 && (
-          <div className="grid sm:grid-cols-2 gap-2 w-full">
-            {suggestedActions.map((suggestedAction, index) => (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ delay: 0.05 * index }}
-                key={index}
-                className={index > 1 ? 'hidden sm:block' : 'block'}
-              >
-                <Button
-                  variant="ghost"
-                  onClick={async () => {
-                    append({
-                      role: 'user',
-                      content: suggestedAction.action,
-                    });
-                  }}
-                  className="text-left border rounded-xl px-4 py-3.5 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start"
-                >
-                  <span className="font-medium">{suggestedAction.title}</span>
-                  <span className="text-muted-foreground">
-                    {suggestedAction.label}
-                  </span>
-                </Button>
-              </motion.div>
-            ))}
-          </div>
+      <div className="relative w-full flex flex-col gap-4">
+        <input
+            type="file"
+            className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
+            ref={fileInputRef}
+            multiple
+            onChange={handleFileChange}
+            tabIndex={-1}
+        />
+
+        {(attachments.length > 0 || uploadQueue.length > 0) && (
+            <div className="flex flex-row gap-2 overflow-x-scroll">
+              {attachments.map((attachment) => (
+                  <PreviewAttachment key={attachment.url} attachment={attachment} />
+              ))}
+
+              {uploadQueue.map((filename) => (
+                  <PreviewAttachment
+                      key={filename}
+                      attachment={{
+                        url: '',
+                        name: filename,
+                        contentType: '',
+                      }}
+                      isUploading={true}
+                  />
+              ))}
+            </div>
         )}
 
-      <input
-        type="file"
-        className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
-        ref={fileInputRef}
-        multiple
-        onChange={handleFileChange}
-        tabIndex={-1}
-      />
+        <Textarea
+            ref={textareaRef}
+            placeholder="Send a message..."
+            value={input}
+            onChange={handleInput}
+            className={cx(
+                'min-h-[24px] overflow-hidden resize-none rounded-xl text-base bg-white/90 backdrop-blur-lg shadow-md',
+                className
+            )}
+            rows={3}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
 
-      {(attachments.length > 0 || uploadQueue.length > 0) && (
-        <div className="flex flex-row gap-2 overflow-x-scroll">
-          {attachments.map((attachment) => (
-            <PreviewAttachment key={attachment.url} attachment={attachment} />
-          ))}
+                if (isLoading) {
+                  toast.error('Please wait for the model to finish its response!');
+                } else {
+                  submitForm();
+                }
+              }
+            }}
+        />
 
-          {uploadQueue.map((filename) => (
-            <PreviewAttachment
-              key={filename}
-              attachment={{
-                url: '',
-                name: filename,
-                contentType: '',
-              }}
-              isUploading={true}
-            />
-          ))}
-        </div>
-      )}
-
-      <Textarea
-        ref={textareaRef}
-        placeholder="Send a message..."
-        value={input}
-        onChange={handleInput}
-        className={cx(
-          'min-h-[24px] overflow-hidden resize-none rounded-xl text-base bg-muted',
-          className
+        {isLoading ? (
+            <Button
+                className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5"
+                onClick={(event) => {
+                  event.preventDefault();
+                  stop();
+                  setMessages((messages) => sanitizeUIMessages(messages));
+                }}
+            >
+              <StopIcon size={14} />
+            </Button>
+        ) : (
+            <Button
+                className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5"
+                onClick={(event) => {
+                  event.preventDefault();
+                  submitForm();
+                }}
+                disabled={input.length === 0 || uploadQueue.length > 0}
+            >
+              <ArrowUpIcon size={14} />
+            </Button>
         )}
-        rows={3}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
 
-            if (isLoading) {
-              toast.error('Please wait for the model to finish its response!');
-            } else {
-              submitForm();
-            }
-          }
-        }}
-      />
-
-      {isLoading ? (
         <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5"
-          onClick={(event) => {
-            event.preventDefault();
-            stop();
-            setMessages((messages) => sanitizeUIMessages(messages));
-          }}
+            className="rounded-full p-1.5 h-fit absolute bottom-2 right-10 m-0.5 dark:border-zinc-700"
+            onClick={(event) => {
+              event.preventDefault();
+              fileInputRef.current?.click();
+            }}
+            variant="outline"
+            disabled={isLoading}
         >
-          <StopIcon size={14} />
+          <PaperclipIcon size={14} />
         </Button>
-      ) : (
-        <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5"
-          onClick={(event) => {
-            event.preventDefault();
-            submitForm();
-          }}
-          disabled={input.length === 0 || uploadQueue.length > 0}
-        >
-          <ArrowUpIcon size={14} />
-        </Button>
-      )}
-
-      <Button
-        className="rounded-full p-1.5 h-fit absolute bottom-2 right-10 m-0.5 dark:border-zinc-700"
-        onClick={(event) => {
-          event.preventDefault();
-          fileInputRef.current?.click();
-        }}
-        variant="outline"
-        disabled={isLoading}
-      >
-        <PaperclipIcon size={14} />
-      </Button>
-    </div>
+      </div>
   );
 }
