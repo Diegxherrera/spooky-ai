@@ -146,7 +146,7 @@ export function MultimodalInput({
   );
 
   return (
-      <div className="relative w-full flex flex-col gap-4 bg-transparent">
+      <div className="relative w-full flex flex-col gap-4">
         <input
             type="file"
             className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
