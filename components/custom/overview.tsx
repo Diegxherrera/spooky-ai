@@ -20,15 +20,15 @@ export const Overview = () => {
           <MessageIcon size={32} />
         </p>
         <p>
-          This is an{' '}
+          Welcome to the{' '}
           <Link
             className="font-medium underline underline-offset-4"
             href="https://github.com/vercel/ai-chatbot"
             target="_blank"
           >
-            open source
+            Halloween
           </Link>{' '}
-          chatbot template built with Next.js and the AI SDK by Vercel. It uses
+          chatbot.
           the{' '}
           <code className="rounded-md bg-muted px-1 py-0.5">streamText</code>{' '}
           function in the server and the{' '}
